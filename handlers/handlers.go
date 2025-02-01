@@ -36,7 +36,7 @@ func (h *Handlers) ShortenURL(c *gin.Context) {
 }
 
 func (h *Handlers) RedirectURL(c *gin.Context) {
-	shortURL := c.Param("shortURL")
+	shortURL := c.Param("shortenURL")
 
 	originalURL, err := h.store.GetOriginalURL(shortURL)
 	if err != nil {
