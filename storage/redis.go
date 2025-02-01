@@ -10,30 +10,30 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-type RedisSotre struct {
+type RedisStore struct {
 	Client *redis.Client
 }
 
 var ctx = context.Background()
 
-func NewRedisStore() *RedisSotre {
+func NewRedisStore() *RedisStore {
 	rdb := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 		DB:   0,
 	})
-	return &RedisSotre{Client: rdb}
+	return &RedisStore{Client: rdb}
 }
 
-func NewTestRedisStore() *RedisSotre {
+func NewTestRedisStore() *RedisStore {
 	rdb := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 		DB:   1,
 	})
-	return &RedisSotre{Client: rdb}
+	return &RedisStore{Client: rdb}
 }
 
 // SaveURL stores the originalURL and shortened version in Redis
-func (s *RedisSotre) SaveURL(originalURL string) (string, error) {
+func (s *RedisStore) SaveURL(originalURL string) (string, error) {
 	shortURL, err := s.Client.Get(ctx, originalURL).Result()
 
 	if err == redis.Nil {
@@ -66,7 +66,7 @@ func (s *RedisSotre) SaveURL(originalURL string) (string, error) {
 }
 
 // GetOriginalURL retrieves the OriginalURL from redis using the shortURL
-func (s *RedisSotre) GetOriginalURL(shortURL string) (string, error) {
+func (s *RedisStore) GetOriginalURL(shortURL string) (string, error) {
 	originalURL, err := s.Client.Get(ctx, shortURL).Result()
 	if err == redis.Nil {
 		return "", fmt.Errorf("URL not found")
@@ -78,7 +78,7 @@ func (s *RedisSotre) GetOriginalURL(shortURL string) (string, error) {
 }
 
 // GetDomainCount retrieves the counts of shortened URLs per domain from redis
-func (s *RedisSotre) GetDomainCount() (map[string]int, error) {
+func (s *RedisStore) GetDomainCount() (map[string]int, error) {
 	keys, err := s.Client.Keys(ctx, "domain:*").Result()
 	if err != nil {
 		return nil, err
@@ -100,14 +100,14 @@ func (s *RedisSotre) GetDomainCount() (map[string]int, error) {
 }
 
 // generateShortURL creates hexademical shortened URL string using hash function
-func (s *RedisSotre) generateShortURL(originalURL string) string {
+func (s *RedisStore) generateShortURL(originalURL string) string {
 	h := fnv.New32a()
 	h.Write([]byte(originalURL))
 	return fmt.Sprintf("%x", h.Sum32())
 }
 
 // getDomain extracts domain name from url
-func (s *RedisSotre) getDomain(originalURL string) (string, error) {
+func (s *RedisStore) getDomain(originalURL string) (string, error) {
 	parsedURL, err := url.Parse(originalURL)
 	if err != nil {
 		return "", err
@@ -116,6 +116,6 @@ func (s *RedisSotre) getDomain(originalURL string) (string, error) {
 	return strings.TrimPrefix(parsedURL.Host, "www."), nil
 }
 
-func (s *RedisSotre) FlushTestDB() {
+func (s *RedisStore) FlushTestDB() {
 	s.Client.FlushDB(ctx)
 }
