@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/go-redis/redis/v8"
@@ -17,16 +18,24 @@ type RedisStore struct {
 var ctx = context.Background()
 
 func NewRedisStore() *RedisStore {
+	redisHost := os.Getenv("REDIS_HOST")
+	if redisHost == "" {
+		redisHost = "localhost"
+	}
 	rdb := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: redisHost + ":6379",
 		DB:   0,
 	})
 	return &RedisStore{Client: rdb}
 }
 
 func NewTestRedisStore() *RedisStore {
+	redisHost := os.Getenv("REDIS_HOST")
+	if redisHost == "" {
+		redisHost = "localhost"
+	}
 	rdb := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: redisHost + ":6379",
 		DB:   1,
 	})
 	return &RedisStore{Client: rdb}
